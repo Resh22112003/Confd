@@ -1,0 +1,1 @@
+confd_cmd -c "notification alarm-event alarm-id high-temp severity critical text 'Temperature too high' timestamp $(date -u +"%Y-%m-%dT%H:%M:%SZ") source Device-1234 category hardware"
