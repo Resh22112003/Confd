@@ -1,46 +1,49 @@
-module alarm {
-  namespace "http://example.com/alarm";
-  prefix alarm;
-  
-  import ietf-alarm { prefix ialm; }
 
-  notification alarm-event {
-    description "Custom Alarm Notification";
+#!/usr/bin/env python3
+import time
+import socket
+import _confd
+import _confd.notifications as notif
+from datetime import datetime
 
-    leaf alarm-id {
-      type string;
-      description "Unique alarm identifier";
-    }
-    leaf severity {
-      type enumeration {
-        enum critical;
-        enum major;
-        enum minor;
-        enum warning;
-        enum cleared;
-      }
-      description "Alarm severity level";
-    }
-    leaf text {
-      type string;
-      description "Alarm description";
-    }
-    leaf timestamp {
-      type string;
-      description "Time when the alarm was generated";
-    }
-    leaf source {
-      type string;
-      description "Source of the alarm (e.g., device ID, system name)";
-    }
-    leaf category {
-      type enumeration {
-        enum hardware;
-        enum software;
-        enum network;
-        enum security;
-      }
-      description "Category of the alarm";
-    }
-  }
-}
+# Function to send an alarm notification
+def send_alarm_notification(alarm_id, severity, text, source, category):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+        notif.connect(sock, "127.0.0.1", _confd.CONFD_PORT)  # Connect to ConfD
+        
+        notif.stream_create(sock, "fault-management")  # Open notification stream
+
+        # Generate timestamp
+        timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        # Send the alarm with additional fields
+        notif.stream_send(sock, "alarm-event", {
+            "alarm-id": alarm_id,
+            "severity": severity,
+            "text": text,
+            "timestamp": timestamp,
+            "source": source,
+            "category": category
+        })
+        notif.stream_close(sock)  # Close the notification stream
+
+        print(f"Sent alarm: {alarm_id} | Severity: {severity} | Source: {source} | Category: {category} | Time: {timestamp}")
+
+    except Exception as e:
+        print(f"Error sending notification: {e}")
+
+# Function to generate alarms every 15 seconds
+def generate_alarms():
+    while True:
+        send_alarm_notification(
+            alarm_id="high-temp",
+            severity="critical",
+            text="Temperature exceeded safe limit",
+            source="Device-1234",
+            category="hardware"
+        )
+        time.sleep(15)  # Wait 15 seconds before sending the next alarm
+
+if __name__ == "__main__":
+    generate_alarms()
