@@ -1,0 +1,214 @@
+Here’s how to organize your React project into separate modules:
+
+
+---
+
+1. UI Component – FilterForm.js
+
+Put this in src/components/FilterForm.js:
+
+import React, { useState } from 'react';
+import './FilterForm.css';
+import { postFilterData } from '../services/api';
+
+export default function FilterForm() {
+  const [formData, setFormData] = useState({
+    neid: '',
+    time: '15 min',
+    calendar: '',
+    fromHr: '1',
+    toHr: '1',
+    fromMin: '1',
+    toMin: '1',
+    portNumber: '',
+    monType: ''
+  });
+
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+
+  const hours = Array.from({ length: 24 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 15 }, (_, i) => i + 1);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await postFilterData(formData);
+      console.log('Submitted:', response);
+    } catch (error) {
+      console.error('Submit Error:', error);
+    }
+  };
+
+  return (
+    <form className="form-container" onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className="label-bold">Neid:</label>
+        <input type="text" name="neid" value={formData.neid} onChange={handleChange} className="input-box" />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time:</label>
+        <select name="time" value={formData.time} onChange={handleChange} className="input-box">
+          <option value="15 min">15 min</option>
+          <option value="24 hrs">24 hrs</option>
+        </select>
+      </div>
+
+      <h3 className="section-title">Filter</h3>
+
+      <label><input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp</label>
+      {showTimestamp && (
+        <>
+          <input type="date" name="calendar" value={formData.calendar} onChange={handleChange} className="input-box" />
+
+          <div className="row-group">
+            <label>From (hrs):</label>
+            <select name="fromHr" value={formData.fromHr} onChange={handleChange} className="input-small">
+              {hours.map((hr) => <option key={hr} value={hr}>{hr}</option>)}
+            </select>
+
+            <label>To (hrs):</label>
+            <select name="toHr" value={formData.toHr} onChange={handleChange} className="input-small">
+              {hours.map((hr) => <option key={hr} value={hr}>{hr}</option>)}
+            </select>
+          </div>
+
+          <div className="row-group">
+            <label>From (min):</label>
+            <select name="fromMin" value={formData.fromMin} onChange={handleChange} className="input-small">
+              {minutes.map((min) => <option key={min} value={min}>{min}</option>)}
+            </select>
+
+            <label>To (min):</label>
+            <select name="toMin" value={formData.toMin} onChange={handleChange} className="input-small">
+              {minutes.map((min) => <option key={min} value={min}>{min}</option>)}
+            </select>
+          </div>
+        </>
+      )}
+
+      <label><input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number</label>
+      {showPortNumber && (
+        <input type="text" name="portNumber" value={formData.portNumber} onChange={handleChange} className="input-box" />
+      )}
+
+      <label><input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon Type</label>
+      {showMonType && (
+        <input type="text" name="monType" value={formData.monType} onChange={handleChange} className="input-box" />
+      )}
+
+      <button type="submit" className="submit-button">Submit</button>
+    </form>
+  );
+}
+
+
+---
+
+2. API Service – api.js
+
+Create src/services/api.js:
+
+export const postFilterData = async (data) => {
+  const response = await fetch('http://localhost:8080/api/filter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
+
+
+---
+
+3. Styles – FilterForm.css
+
+Create src/components/FilterForm.css:
+
+.form-container {
+  max-width: 500px;
+  margin: auto;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #f9f9f9;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.label-bold {
+  font-weight: bold;
+}
+
+.input-box {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.input-small {
+  width: 80px;
+  margin-right: 10px;
+}
+
+.row-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.5rem 0;
+}
+
+.submit-button {
+  margin-top: 1.5rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background: #0056b3;
+}
+
+
+---
+
+4. App.js
+
+Import and use your component:
+
+import React from 'react';
+import FilterForm from './components/FilterForm';
+
+function App() {
+  return (
+    <div>
+      <h1>Filter Interface</h1>
+      <FilterForm />
+    </div>
+  );
+}
+
+export default App;
+
+
+---
+
+Let me know if you want a reusable backend model for this or to save the form to a database too.
+
