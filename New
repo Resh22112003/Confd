@@ -1,0 +1,98 @@
+// FilterForm.js import React, { useState } from 'react'; import './FilterForm.css';
+
+export default function FilterForm() { const [showTimestamp, setShowTimestamp] = useState(false); const [showPortNumber, setShowPortNumber] = useState(false); const [showMonType, setShowMonType] = useState(false);
+
+const hours = Array.from({ length: 24 }, (, i) => i + 1); const minutes = Array.from({ length: 15 }, (, i) => i + 1);
+
+return ( <div className="form-container"> <div className="form-group"> <label className="label-bold">Neid: </label> <input type="text" placeholder="Placeholder" className="input-box" /> </div>
+
+<div className="form-group">
+    <label className="label-bold">Time: </label>
+    <select className="input-box">
+      <option>15 min</option>
+      <option>24 hrs</option>
+    </select>
+  </div>
+
+  <div className="form-section">
+    <h3 className="section-title">Filter</h3>
+
+    <div className="checkbox-group">
+      <label>
+        <input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp
+      </label>
+    </div>
+
+    {showTimestamp && (
+      <div className="sub-section">
+        <div className="form-group">
+          <label>Calender: </label>
+          <input type="date" className="input-box" />
+        </div>
+
+        <div className="form-group row-group">
+          <label>From (hrs): </label>
+          <select className="input-small">
+            {hours.map((hr) => (
+              <option key={`from-hr-${hr}`} value={hr}>{hr}</option>
+            ))}
+          </select>
+          <label className="ml-2">To (hrs): </label>
+          <select className="input-small">
+            {hours.map((hr) => (
+              <option key={`to-hr-${hr}`} value={hr}>{hr}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group row-group">
+          <label>From (min): </label>
+          <select className="input-small">
+            {minutes.map((min) => (
+              <option key={`from-min-${min}`} value={min}>{min}</option>
+            ))}
+          </select>
+          <label className="ml-2">To (min): </label>
+          <select className="input-small">
+            {minutes.map((min) => (
+              <option key={`to-min-${min}`} value={min}>{min}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    )}
+
+    <div className="checkbox-group">
+      <label>
+        <input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number
+      </label>
+    </div>
+
+    {showPortNumber && (
+      <div className="sub-section">
+        <label>Enter the Port Number: </label>
+        <input type="text" className="input-small" />
+      </div>
+    )}
+
+    <div className="checkbox-group">
+      <label>
+        <input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon-Type
+      </label>
+    </div>
+
+    {showMonType && (
+      <div className="sub-section">
+        <label>Enter the Mon-Type: </label>
+        <input type="text" className="input-small" />
+      </div>
+    )}
+  </div>
+
+  <div className="form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+    <button type="submit" className="submit-button">Submit</button>
+  </div>
+</div>
+
+); }
+
