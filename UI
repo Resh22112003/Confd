@@ -1,0 +1,150 @@
+// FilterForm.js
+import React, { useState } from 'react';
+import './FilterForm.css';
+
+export default function FilterForm() {
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+
+  return (
+    <div className="form-container">
+      <div className="form-group">
+        <label className="label-bold">Neid: </label>
+        <input type="text" placeholder="Placeholder" className="input-box" />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time: </label>
+        <select className="input-box">
+          <option>15 min</option>
+          <option>24 hrs</option>
+        </select>
+      </div>
+
+      <div className="form-section">
+        <h3 className="section-title">Filter</h3>
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp
+          </label>
+        </div>
+
+        {showTimestamp && (
+          <div className="sub-section">
+            <div className="form-group">
+              <label>Calender: </label>
+              <input type="date" className="input-box" />
+            </div>
+            <div className="form-group">
+              <label>From (hrs): </label>
+              <input type="text" className="input-small" />
+            </div>
+            <div className="form-group">
+              <label>To (hrs): </label>
+              <input type="text" className="input-small" />
+            </div>
+            <div className="form-group">
+              <label>From (min): </label>
+              <input type="text" className="input-small" />
+            </div>
+            <div className="form-group">
+              <label>To (min): </label>
+              <input type="text" className="input-small" />
+            </div>
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number
+          </label>
+        </div>
+
+        {showPortNumber && (
+          <div className="sub-section">
+            <label>Enter the Port Number: </label>
+            <input type="text" className="input-small" />
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon-Type
+          </label>
+        </div>
+
+        {showMonType && (
+          <div className="sub-section">
+            <label>Enter the Mon-Type: </label>
+            <input type="text" className="input-small" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+Here’s the updated structure:
+
+1. FilterForm.js (React Component)
+
+Already updated in the canvas — uses class names for styling.
+
+
+---
+
+2. FilterForm.css (CSS File)
+
+Create a separate file FilterForm.css with the following content:
+
+.form-container {
+  padding: 1.5rem;
+  max-width: 600px;
+  margin: 2rem auto;
+  border: 1px solid #ccc;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.label-bold {
+  font-weight: 600;
+}
+
+.input-box {
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.input-small {
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  width: 5rem;
+  margin-left: 0.5rem;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.checkbox-group {
+  margin-top: 0.75rem;
+}
+
+.sub-section {
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+Let me know if you want to convert this into a fully responsive layout or integrate with Tailwind instead.
+
