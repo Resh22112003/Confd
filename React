@@ -1,0 +1,148 @@
+import React, { useState } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer
+} from 'recharts';
+
+function PerformanceAnalyzer() {
+  const [neId, setNeId] = useState('');
+  const [timeRange, setTimeRange] = useState('15min');
+  const [options, setOptions] = useState({
+    timestamp: false,
+    port: false,
+    monType: false
+  });
+  const [result, setResult] = useState([]);
+
+  const handleCheckboxChange = (e) => {
+    setOptions({ ...options, [e.target.name]: e.target.checked });
+  };
+
+  const handleAnalyze = () => {
+    // Mock data generation based on selected options
+    const mockData = [
+      { timestamp: '2025-04-05 10:00', port: 10, monType: 'CPU' },
+      { timestamp: '2025-04-05 10:15', port: 20, monType: 'Memory' },
+      { timestamp: '2025-04-05 10:30', port: 15, monType: 'Disk' },
+    ];
+
+    // Filter based on selected options
+    const filteredData = mockData.map(entry => {
+      const filteredEntry = {};
+      if (options.timestamp) filteredEntry.timestamp = entry.timestamp;
+      if (options.port) filteredEntry.port = entry.port;
+      if (options.monType) filteredEntry.monType = entry.monType;
+      return filteredEntry;
+    });
+
+    setResult(filteredData);
+  };
+
+  const downloadCSV = (data) => {
+    if (!data || data.length === 0) return;
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+      headers.join(','),
+      ...data.map(row => headers.map(field => `"${row[field] || ''}"`).join(','))
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'performance_data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Performance Analyzer (Frontend Only)</h2>
+
+      <div>
+        <label>NE ID:</label>
+        <input
+          type="text"
+          value={neId}
+          onChange={e => setNeId(e.target.value)}
+          style={{ marginLeft: '10px', marginBottom: '10px' }}
+        />
+      </div>
+
+      <div>
+        <label>Time Range:</label>
+        <select
+          value={timeRange}
+          onChange={e => setTimeRange(e.target.value)}
+          style={{ marginLeft: '10px', marginBottom: '10px' }}
+        >
+          <option value="15min">15 Minutes</option>
+          <option value="24hr">24 Hours</option>
+        </select>
+      </div>
+
+      <div>
+        <label><input type="checkbox" name="timestamp" checked={options.timestamp} onChange={handleCheckboxChange} /> Timestamp</label>
+        <label style={{ marginLeft: '10px' }}><input type="checkbox" name="port" checked={options.port} onChange={handleCheckboxChange} /> Port</label>
+        <label style={{ marginLeft: '10px' }}><input type="checkbox" name="monType" checked={options.monType} onChange={handleCheckboxChange} /> Mon Type</label>
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <h3>Result:</h3>
+
+        {result.length > 0 ? (
+          <table border="1" cellPadding="5" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {Object.keys(result[0]).map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {result.map((row, idx) => (
+                <tr key={idx}>
+                  {Object.values(row).map((val, i) => (
+                    <td key={i}>{val}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No results to display.</p>
+        )}
+
+        <div style={{ marginTop: '10px' }}>
+          <button onClick={handleAnalyze}>Analyze</button>
+          <button onClick={() => downloadCSV(result)} style={{ marginLeft: '10px' }}>Download CSV</button>
+        </div>
+      </div>
+
+      {result.length > 0 && options.timestamp && options.port && (
+        <div style={{ width: '100%', height: 300, marginTop: '30px' }}>
+          <h3>Performance Graph</h3>
+          <ResponsiveContainer>
+            <LineChart data={result}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="timestamp" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="port" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PerformanceAnalyzer;
