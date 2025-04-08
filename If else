@@ -1,0 +1,137 @@
+import './App.css';
+import React, { useState } from 'react';
+
+function App() {
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+  const [timeRange, setTimeRange] = useState('');
+
+  // Generate dynamic dropdown values based on selected time range
+  let dynamicHours = [];
+  let dynamicMinutes = [];
+
+  if (timeRange === '15min') {
+    dynamicMinutes = Array.from({ length: 15 }, (_, i) => i + 1); // 1 to 15
+  } else if (timeRange === '24hrs') {
+    dynamicHours = Array.from({ length: 24 }, (_, i) => i); // 0 to 23
+  }
+
+  return (
+    <div className="form-container">
+      <div className="form-group">
+        <label className="label-bold">Neid: </label>
+        <input type="text" placeholder="Enter the neid" className="input-box" />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time: </label>
+        <select
+          className="input-box"
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+        >
+          <option value="">Select</option>
+          <option value="15min">15 min</option>
+          <option value="24hrs">24 hrs</option>
+        </select>
+      </div>
+
+      <div className="form-section">
+        <h3 className="section-title">Filter</h3>
+
+        <div className="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              onChange={() => setShowTimestamp(!showTimestamp)}
+            /> Timestamp
+          </label>
+        </div>
+
+        {showTimestamp && (
+          <div className="sub-section">
+            <div className="form-group">
+              <label>Calendar: </label>
+              <input type="date" className="input-box" />
+            </div>
+
+            {timeRange === '24hrs' && (
+              <div className="form-group row-group">
+                <p>Hours:</p>
+                <label>From : </label>
+                <select className="input-small">
+                  {dynamicHours.map((hr) => (
+                    <option key={`from-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To : </label>
+                <select className="input-small">
+                  {dynamicHours.map((hr) => (
+                    <option key={`to-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {timeRange === '15min' && (
+              <div className="form-group row-group">
+                <p>Minutes:</p>
+                <label>From : </label>
+                <select className="input-small">
+                  {dynamicMinutes.map((min) => (
+                    <option key={`from-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To : </label>
+                <select className="input-small">
+                  {dynamicMinutes.map((min) => (
+                    <option key={`to-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              onChange={() => setShowPortNumber(!showPortNumber)}
+            /> Port Number
+          </label>
+        </div>
+
+        {showPortNumber && (
+          <div className="sub-section">
+            <label>Enter the Port Number: </label>
+            <input type="text" className="input-small" />
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              onChange={() => setShowMonType(!showMonType)}
+            /> Mon-Type
+          </label>
+        </div>
+
+        {showMonType && (
+          <div className="sub-section">
+            <label>Enter the Mon-Type: </label>
+            <input type="text" className="input-small" />
+          </div>
+        )}
+      </div>
+
+      <div className="form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+        <button type="submit" className="submit-button">Submit</button>
+      </div>
+    </div>
+  );
+}
+
+export default App;
