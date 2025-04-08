@@ -1,0 +1,194 @@
+Here’s the updated setup based on your new requirements:
+
+
+---
+
+1. FilterForm.js (UI Component)
+
+Modified to use startHour, endHour, startMin, and endMin separately, and supports both GET and POST to Spring Boot:
+
+import React, { useState, useEffect } from 'react';
+import './FilterForm.css';
+import { postFilterData, getFilterData } from '../services/api';
+
+export default function FilterForm() {
+  const [formData, setFormData] = useState({
+    neid: '',
+    time: '15 min',
+    calendar: '',
+    startHour: '1',
+    endHour: '1',
+    startMin: '1',
+    endMin: '1',
+    portNumber: '',
+    monType: ''
+  });
+
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+  const [fetchedData, setFetchedData] = useState(null);
+
+  const hours = Array.from({ length: 24 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 15 }, (_, i) => i + 1);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await postFilterData(formData);
+      console.log('POST response:', response);
+    } catch (error) {
+      console.error('POST error:', error);
+    }
+  };
+
+  const handleFetch = async () => {
+    try {
+      const response = await getFilterData();
+      setFetchedData(response);
+      console.log('GET response:', response);
+    } catch (error) {
+      console.error('GET error:', error);
+    }
+  };
+
+  return (
+    <form className="form-container" onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className="label-bold">Neid:</label>
+        <input type="text" name="neid" value={formData.neid} onChange={handleChange} className="input-box" />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time:</label>
+        <select name="time" value={formData.time} onChange={handleChange} className="input-box">
+          <option value="15 min">15 min</option>
+          <option value="24 hrs">24 hrs</option>
+        </select>
+      </div>
+
+      <h3 className="section-title">Filter</h3>
+
+      <label><input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp</label>
+      {showTimestamp && (
+        <>
+          <input type="date" name="calendar" value={formData.calendar} onChange={handleChange} className="input-box" />
+
+          <div className="row-group">
+            <label>Start Hour:</label>
+            <select name="startHour" value={formData.startHour} onChange={handleChange} className="input-small">
+              {hours.map((hr) => <option key={hr} value={hr}>{hr}</option>)}
+            </select>
+
+            <label>End Hour:</label>
+            <select name="endHour" value={formData.endHour} onChange={handleChange} className="input-small">
+              {hours.map((hr) => <option key={hr} value={hr}>{hr}</option>)}
+            </select>
+          </div>
+
+          <div className="row-group">
+            <label>Start Min:</label>
+            <select name="startMin" value={formData.startMin} onChange={handleChange} className="input-small">
+              {minutes.map((min) => <option key={min} value={min}>{min}</option>)}
+            </select>
+
+            <label>End Min:</label>
+            <select name="endMin" value={formData.endMin} onChange={handleChange} className="input-small">
+              {minutes.map((min) => <option key={min} value={min}>{min}</option>)}
+            </select>
+          </div>
+        </>
+      )}
+
+      <label><input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number</label>
+      {showPortNumber && (
+        <input type="text" name="portNumber" value={formData.portNumber} onChange={handleChange} className="input-box" />
+      )}
+
+      <label><input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon Type</label>
+      {showMonType && (
+        <input type="text" name="monType" value={formData.monType} onChange={handleChange} className="input-box" />
+      )}
+
+      <button type="submit" className="submit-button">Submit</button>
+      <button type="button" onClick={handleFetch} className="submit-button" style={{ marginLeft: '1rem' }}>
+        Fetch Data
+      </button>
+
+      {fetchedData && (
+        <pre className="data-output">{JSON.stringify(fetchedData, null, 2)}</pre>
+      )}
+    </form>
+  );
+}
+
+
+---
+
+2. api.js (Service Module)
+
+Update this in src/services/api.js:
+
+const BASE_URL = 'http://localhost:8080/api/filter';
+
+export const postFilterData = async (data) => {
+  const response = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error('POST failed');
+  return response.json();
+};
+
+export const getFilterData = async () => {
+  const response = await fetch(BASE_URL, {
+    method: 'GET'
+  });
+  if (!response.ok) throw new Error('GET failed');
+  return response.json();
+};
+
+
+---
+
+3. Spring Boot Backend Expectations
+
+Your Spring Boot backend should have these:
+
+POST endpoint at /api/filter to receive the form.
+
+GET endpoint at /api/filter to return some data.
+
+
+Let me know if you want the Java model and controller classes for Spring Boot too.
+
+/* src/styles/FilterForm.css */
+
+.form-container { width: 400px; margin: 0 auto; padding: 1rem; background-color: #f7f7f7; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+
+.form-group { margin-bottom: 1rem; }
+
+.label-bold { font-weight: bold; }
+
+.input-box { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ccc; border-radius: 4px; }
+
+.input-small { width: 45%; padding: 0.5rem; margin-right: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+
+.row-group { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+
+.submit-button { padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+.submit-button:hover { background-color: #0056b3; }
+
+.section-title { font-size: 1.2rem; margin-top: 1rem; margin-bottom: 0.5rem; }
+
+.data-output { background: #e8e8e8; margin-top: 1rem; padding: 1rem; border-radius: 5px; max-height: 300px; overflow-y: auto; font-size: 0.9rem; }
+
