@@ -1,0 +1,138 @@
+Here’s a simple Spring Boot backend to handle:
+
+1. POST request to /api/form-data to accept and save form data
+
+
+2. GET request to /api/form-data to retrieve all submitted form entries
+
+
+
+
+---
+
+1. Create a Data Model
+
+// src/main/java/com/example/demo/model/FormData.java
+package com.example.demo.model;
+
+public class FormData {
+    private String neid;
+    private String timeRange;
+    private String calendarDate;
+    private String hourFrom;
+    private String hourTo;
+    private String minuteFrom;
+    private String minuteTo;
+    private String portNumber;
+    private String monType;
+
+    // Getters and setters
+    public String getNeid() { return neid; }
+    public void setNeid(String neid) { this.neid = neid; }
+
+    public String getTimeRange() { return timeRange; }
+    public void setTimeRange(String timeRange) { this.timeRange = timeRange; }
+
+    public String getCalendarDate() { return calendarDate; }
+    public void setCalendarDate(String calendarDate) { this.calendarDate = calendarDate; }
+
+    public String getHourFrom() { return hourFrom; }
+    public void setHourFrom(String hourFrom) { this.hourFrom = hourFrom; }
+
+    public String getHourTo() { return hourTo; }
+    public void setHourTo(String hourTo) { this.hourTo = hourTo; }
+
+    public String getMinuteFrom() { return minuteFrom; }
+    public void setMinuteFrom(String minuteFrom) { this.minuteFrom = minuteFrom; }
+
+    public String getMinuteTo() { return minuteTo; }
+    public void setMinuteTo(String minuteTo) { this.minuteTo = minuteTo; }
+
+    public String getPortNumber() { return portNumber; }
+    public void setPortNumber(String portNumber) { this.portNumber = portNumber; }
+
+    public String getMonType() { return monType; }
+    public void setMonType(String monType) { this.monType = monType; }
+}
+
+
+---
+
+2. Controller to Handle POST and GET
+
+// src/main/java/com/example/demo/controller/FormDataController.java
+package com.example.demo.controller;
+
+import com.example.demo.model.FormData;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/form-data")
+@CrossOrigin(origins = "*") // Allow frontend access
+public class FormDataController {
+
+    private final List<FormData> submittedForms = new ArrayList<>();
+
+    // POST endpoint
+    @PostMapping
+    public String submitForm(@RequestBody FormData formData) {
+        submittedForms.add(formData);
+        return "Data received for NEID: " + formData.getNeid();
+    }
+
+    // GET endpoint to fetch all submitted form data
+    @GetMapping
+    public List<FormData> getAllFormData() {
+        return submittedForms;
+    }
+}
+
+
+---
+
+3. Main Application Class
+
+// src/main/java/com/example/demo/DemoApplication.java
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+
+---
+
+4. Dependencies (pom.xml)
+
+Make sure your pom.xml has:
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+</dependencies>
+
+
+---
+
+5. Run the Application
+
+Once it's running:
+
+POST data to: http://localhost:8080/api/form-data
+
+GET all entries from: http://localhost:8080/api/form-data
+
+
+Would you like to persist this in a database (like H2/MySQL), or keep it in memory as is?
+
