@@ -1,0 +1,160 @@
+Here's a Spring Boot backend to handle the POST request for /api/form-data. It includes:
+
+1. A DTO class for your form data
+
+
+2. A controller to receive and process the data
+
+
+3. A basic service layer (optional but good practice)
+
+
+
+
+---
+
+1. FormDataDTO.java (Data Transfer Object)
+
+package com.example.demo.dto;
+
+public class FormDataDTO {
+    private String neid;
+    private String timeRange;
+    private String calendarDate;
+    private String hourFrom;
+    private String hourTo;
+    private String minuteFrom;
+    private String minuteTo;
+    private String portNumber;
+    private String monType;
+
+    // Getters and Setters
+    public String getNeid() {
+        return neid;
+    }
+
+    public void setNeid(String neid) {
+        this.neid = neid;
+    }
+
+    public String getTimeRange() {
+        return timeRange;
+    }
+
+    public void setTimeRange(String timeRange) {
+        this.timeRange = timeRange;
+    }
+
+    public String getCalendarDate() {
+        return calendarDate;
+    }
+
+    public void setCalendarDate(String calendarDate) {
+        this.calendarDate = calendarDate;
+    }
+
+    public String getHourFrom() {
+        return hourFrom;
+    }
+
+    public void setHourFrom(String hourFrom) {
+        this.hourFrom = hourFrom;
+    }
+
+    public String getHourTo() {
+        return hourTo;
+    }
+
+    public void setHourTo(String hourTo) {
+        this.hourTo = hourTo;
+    }
+
+    public String getMinuteFrom() {
+        return minuteFrom;
+    }
+
+    public void setMinuteFrom(String minuteFrom) {
+        this.minuteFrom = minuteFrom;
+    }
+
+    public String getMinuteTo() {
+        return minuteTo;
+    }
+
+    public void setMinuteTo(String minuteTo) {
+        this.minuteTo = minuteTo;
+    }
+
+    public String getPortNumber() {
+        return portNumber;
+    }
+
+    public void setPortNumber(String portNumber) {
+        this.portNumber = portNumber;
+    }
+
+    public String getMonType() {
+        return monType;
+    }
+
+    public void setMonType(String monType) {
+        this.monType = monType;
+    }
+}
+
+
+---
+
+2. FormDataController.java
+
+package com.example.demo.controller;
+
+import com.example.demo.dto.FormDataDTO;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:3000") // adjust if needed
+public class FormDataController {
+
+    @PostMapping("/form-data")
+    public ResponseEntity<String> submitFormData(@RequestBody FormDataDTO data) {
+        // Log or process the data
+        System.out.println("Received data: " + data.getNeid() + ", " + data.getTimeRange());
+
+        // You can forward this to a service, database, or log it
+        return ResponseEntity.ok("Received form data successfully for NEID: " + data.getNeid());
+    }
+}
+
+
+---
+
+3. DemoApplication.java (Main Class)
+
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(DemoApplication.class, args);
+  }
+}
+
+
+---
+
+4. application.properties
+
+server.port=8080
+spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false
+
+
+---
+
+Let me know if you want to connect this to a database (e.g., JPA with MySQL or H2), or log/store the received data permanently.
+
