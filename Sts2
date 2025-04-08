@@ -1,0 +1,65 @@
+Thanks for the image! You’re right — if List<FormDataDTO> isn't reflecting stored data properly, switching to a Map<String, FormDataDTO> (e.g., using neid as the key) will be more reliable and helps uniquely identify each entry.
+
+
+---
+
+Updated Spring Boot Controller Using Map
+
+package com.UI.Controller;
+
+import com.UI.DTO.FormDataDTO;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class FormDataController {
+
+    private final Map<String, FormDataDTO> formDataMap = new HashMap<>();
+
+    @PostMapping("/form-data")
+    public String submitForm(@RequestBody FormDataDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("Data stored for NEID: " + formData.getNeid());
+        return "Data stored for NEID: " + formData.getNeid();
+    }
+
+    @GetMapping("/form-data")
+    public Collection<FormDataDTO> getAllFormData() {
+        System.out.println("Returning all data:");
+        System.out.println(formDataMap.values());
+        return formDataMap.values();
+    }
+}
+
+
+---
+
+Key Changes:
+
+Map<String, FormDataDTO> formDataMap: Stores each form using the unique neid as a key.
+
+formDataMap.put(...): Adds or overwrites based on the neid.
+
+formDataMap.values(): Returns all submitted forms as a collection.
+
+
+
+---
+
+Bonus — To Fetch by NEID:
+
+You can also support individual fetch like this:
+
+@GetMapping("/form-data/{neid}")
+public FormDataDTO getFormByNeid(@PathVariable String neid) {
+    return formDataMap.get(neid);
+}
+
+
+---
+
+Let me know if you'd like to persist it to a real database (like H2 or PostgreSQL), or export the data to a file. Want to test it with Postman or React next?
+
