@@ -1,0 +1,44 @@
+package com.UI.Controller;
+
+import com.UI.DTO.*;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class FormDataController {
+
+    private final Map<String, Object> formDataMap = new HashMap<>();
+
+    // API 1 - Only NEID
+    @PostMapping("/endpoint1")
+    public String submitNeidOnly(@RequestBody FormNeidDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 1 - Stored NEID: " + formData.getNeid());
+        return "Stored NEID: " + formData.getNeid();
+    }
+
+    // API 2 - Timestamp + Port
+    @PostMapping("/endpoint2")
+    public String submitTimestampPort(@RequestBody FormTimestampPortDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 2 - Stored Timestamp + Port Data: " + formData);
+        return "Stored data for NEID: " + formData.getNeid();
+    }
+
+    // API 3 - Timestamp + Port + MonType
+    @PostMapping("/endpoint3")
+    public String submitFullData(@RequestBody FormFullDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 3 - Stored Full Data: " + formData);
+        return "Stored full data for NEID: " + formData.getNeid();
+    }
+
+    // To fetch all records (can be improved to typecast and segregate)
+    @GetMapping("/form-data")
+    public Collection<Object> getAllFormData() {
+        return formDataMap.values();
+    }
+}
