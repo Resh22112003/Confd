@@ -1,0 +1,201 @@
+import './Form.css';
+import React, {useState} from 'react';
+import { submitAPI1,submitAPI2,submitAPI3 } from './api.jsx';
+import { useNavigate } from 'react-router-dom'; 
+
+
+function Form() {
+  const navigate = useNavigate();
+  const [neid, setNeid] = useState('');
+  const [timeRange, setTimeRange] = useState('');
+  const [calendarDate, setCalendarDate] = useState('');
+  const [hourFrom, setHourFrom] = useState('');
+  const [hourTo, setHourTo] = useState('');
+  const [minuteFrom, setMinuteFrom] = useState('');
+  const [minuteTo, setMinuteTo] = useState('');
+  const [portNumber, setPortNumber] = useState('');
+  const [monType, setMonType] = useState('');
+
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+
+  //const dynamicHoursStart = Array.from({ length: 23 }, (_, i) => i + 1);
+  //const dynamicHoursEnd = Array.from({ length: 23 }, (_, i) => i + 2);
+  const dynamicMinutesStart = Array.from({ length: 14 }, (_, i) => i + 1);
+  const dynamicMinutesEnd = Array.from({ length: 14 }, (_, i) => i + 2);
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    let message;
+    if (!showTimestamp && !showPortNumber && !showMonType) {
+      message = await submitAPI1({ neid,timeRange});
+    } else if (showTimestamp && showPortNumber && !showMonType) {
+      message = await submitAPI2({
+        neid,
+        timeRange,
+        calendarDate,
+        minuteFrom,
+        minuteTo,
+        portNumber,
+      });
+    } else if (showTimestamp && showPortNumber && showMonType) {
+      message = await submitAPI3({
+        neid,
+        timeRange,
+        calendarDate,
+        minuteFrom,
+        minuteTo,
+        portNumber,
+        monType,
+      });
+    } else {
+      alert("Invalid form combination for submission.");
+      return;
+    }
+
+    navigate('/table');
+  } catch (error) {
+    console.error(error);
+    alert("Form submission failed.");
+  }
+};
+
+
+
+{/*
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      neid,
+      timeRange,
+      calendarDate,
+      hourFrom,
+      hourTo,
+      minuteFrom,
+      minuteTo,
+      portNumber,
+      monType
+    };
+
+     try {
+      await submitForm(payload);
+      navigate('/table');
+    } catch {
+      alert("Form submission failed.");
+    }
+  };
+  */}
+
+  return (
+    <form className="form-container" onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className="label-bold">Neid: </label>
+        <input type="text" className="input-box" value={neid} required onChange={(e) => setNeid(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time: </label>
+        <select className="input-box" value={timeRange} required onChange={(e) => setTimeRange(e.target.value)}>
+          <option value="">Select</option>
+          <option value="15min">15 min</option>
+          {/*<option value="24hrs">24 hrs</option>*/}
+        </select>
+      </div>
+
+      <div className="form-section">
+        <h3 className="section-title">Filter</h3>
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp
+          </label>
+        </div>
+
+        {showTimestamp && (
+          <div className="sub-section">
+            <div className="form-group">
+              <label>Calendar: </label>
+              <input type="date" required className="input-box" value={calendarDate} onChange={(e) => setCalendarDate(e.target.value)} />
+            </div>
+{/*
+            {timeRange === '24hrs' && (
+              <div className="form-group row-group">
+                <p>Hours:</p>
+                <label>From:</label>
+                <select className="input-small" value={hourFrom} onChange={(e) => setHourFrom(e.target.value)}>
+                  {dynamicHoursStart.map((hr) => (
+                    <option key={`from-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To:</label>
+                <select className="input-small" value={hourTo} onChange={(e) => setHourTo(e.target.value)}>
+                  {dynamicHoursEnd.map((hr) => (
+                    <option key={`to-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+*/}
+            {timeRange === '15min' && (
+              <div className="form-group row-group">
+                <p>Minutes:</p>
+                <label>From:</label>
+                <select required className="input-small" value={minuteFrom} onChange={(e) => setMinuteFrom(e.target.value)}>
+                  {dynamicMinutesStart.map((min) => (
+                    <option required key={`from-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To:</label>
+                <select required className="input-small" value={minuteTo} onChange={(e) => setMinuteTo(e.target.value)}>
+                  {dynamicMinutesEnd.map((min) => (
+                    <option required key={`to-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number
+          </label>
+        </div>
+
+        {showPortNumber && (
+          <div className="sub-section">
+            <label>Enter the Port Number: </label>
+            <input type="text" className="input-small" value={portNumber} onChange={(e) => setPortNumber(e.target.value)} />
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon-Type
+          </label>
+        </div>
+
+        {showMonType && (
+          <div className="sub-section">
+            <label>Enter the Mon-Type: </label>
+            <input type="text" className="input-small" value={monType} onChange={(e) => setMonType(e.target.value)} />
+          </div>
+        )}
+      </div>
+
+      <div className="form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+        <button type="submit" className="submit-button">Submit</button>
+      </div>
+    </form>
+  );
+}
+
+export default Form;
+
+
+
+
+
