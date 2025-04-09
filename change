@@ -1,0 +1,28 @@
+package com.UI.Controller;
+
+import com.UI.DTO.*;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class FormDataController {
+
+    private final Map<String, FormDataDTO> formDataMap = new HashMap<>();
+
+    @PostMapping("/form-data")
+    public String submitForm(@RequestBody FormDataDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("Data stored for NEID: " + formData.getNeid());
+        return "Data NEID: " + formData.getNeid();
+    }
+    
+    @GetMapping("/form-data")
+    public Collection<FormDataDTO> getAllFormData() {
+        System.out.println("Returning all data:");
+        System.out.println(formDataMap.values());
+        return formDataMap.values();
+    }
+}
