@@ -1,0 +1,162 @@
+Thanks! Based on your clarification:
+
+The table must have fixed columns: neid, timestamp, portname, description, direction, kpis, location, unit.
+
+These columns must appear in the table header regardless of JSON order.
+
+Each row will fill these columns by reading the corresponding keys from each JSON object.
+
+
+Here’s the updated version of the React component and related files to reflect that.
+
+
+---
+
+1. JsonTableViewer.js – Fixed Column Component
+
+import React, { useEffect, useState } from 'react';
+import { fetchFormData } from '../api/formDataApi';
+import '../styles/JsonTableViewer.css';
+
+const TABLE_COLUMNS = ['neid', 'timestamp', 'portname', 'description', 'direction', 'kpis', 'location', 'unit'];
+
+function JsonTableViewer() {
+  const [jsonData, setJsonData] = useState([]);
+
+  useEffect(() => {
+    fetchFormData()
+      .then((data) => setJsonData(data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+  const downloadTable = () => {
+    if (jsonData.length === 0) return;
+
+    const csvRows = [
+      TABLE_COLUMNS.join(','), // Header row
+      ...jsonData.map(row =>
+        TABLE_COLUMNS.map(col => `"${row[col] || ''}"`).join(',')
+      )
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="json-table-container">
+      <h2>Form Data Table</h2>
+      {jsonData.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <table className="json-table">
+            <thead>
+              <tr>
+                {TABLE_COLUMNS.map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {jsonData.map((row, index) => (
+                <tr key={index}>
+                  {TABLE_COLUMNS.map((col, i) => (
+                    <td key={i}>{row[col] || ''}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="download-btn" onClick={downloadTable}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default JsonTableViewer;
+
+
+---
+
+2. formDataApi.js – API Fetch Logic (Unchanged)
+
+export const fetchFormData = async () => {
+  const response = await fetch("http://localhost:8080/api/endpoints");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch form data");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+
+---
+
+3. JsonTableViewer.css – Styling (Unchanged)
+
+.json-table-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.json-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.json-table th,
+.json-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.json-table th {
+  background-color: #f2f2f2;
+}
+
+.download-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+
+---
+
+How it Works
+
+Table headers are now static and follow the required column order.
+
+For each row, the code checks if the column exists and shows its value, else it leaves it blank ('').
+
+Same structure is used for the CSV download.
+
+
+
+---
+
+Would you like me to now generate the Spring Boot backend code that returns sample JSON with those fields?
+
