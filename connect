@@ -1,0 +1,235 @@
+import React, { useEffect, useState } from 'react';
+import { fetchFormData } from './api.jsx';
+import './DataTable.css';
+
+const TABLE_COLUMNS = ['neid', 'timestamp', 'portname', 'description', 'direction', 'kpis', 'location', 'unit'];
+
+function DataTable() {
+  const [jsonData, setJsonData] = useState([]);
+
+  useEffect(() => {
+    fetchFormData()
+      .then((data) => setJsonData(data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+  const downloadTable = () => {
+    if (jsonData.length === 0) return;
+
+    const csvRows = [
+      TABLE_COLUMNS.join(','), // Header row
+      ...jsonData.map(row =>
+        TABLE_COLUMNS.map(col => `"${row[col] || ''}"`).join(',')
+      )
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="json-table-container">
+      <h2>Form Data Table</h2>
+      {jsonData.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <table className="json-table">
+            <thead>
+              <tr>
+                {TABLE_COLUMNS.map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {jsonData.map((row, index) => (
+                <tr key={index}>
+                  {TABLE_COLUMNS.map((col, i) => (
+                    <td key={i}>{row[col] || ''}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="download-btn" onClick={downloadTable}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+
+export default DataTable;
+
+
+
+
+
+
+
+import './App.css';
+import React, {useState} from 'react';
+import { submitForm } from './api.jsx';
+
+function App() {
+const [neid, setNeid] = useState('');
+  const [timeRange, setTimeRange] = useState('');
+  const [calendarDate, setCalendarDate] = useState('');
+  const [hourFrom, setHourFrom] = useState('');
+  const [hourTo, setHourTo] = useState('');
+  const [minuteFrom, setMinuteFrom] = useState('');
+  const [minuteTo, setMinuteTo] = useState('');
+  const [portNumber, setPortNumber] = useState('');
+  const [monType, setMonType] = useState('');
+
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+
+  const dynamicHoursStart = Array.from({ length: 23 }, (_, i) => i + 1);
+  const dynamicHoursEnd = Array.from({ length: 23 }, (_, i) => i + 2);
+  const dynamicMinutesStart = Array.from({ length: 14 }, (_, i) => i + 1);
+  const dynamicMinutesEnd = Array.from({ length: 14 }, (_, i) => i + 2);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      neid,
+      timeRange,
+      calendarDate,
+      hourFrom,
+      hourTo,
+      minuteFrom,
+      minuteTo,
+      portNumber,
+      monType
+    };
+
+    try {
+      const message = await submitForm(payload);
+      alert("Form submitted successfully!\n" + message);
+    } catch {
+      alert("Form submission failed.");
+    }
+  };
+
+  return (
+    <form className="form-container" onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label className="label-bold">Neid: </label>
+        <input type="text" className="input-box" value={neid} onChange={(e) => setNeid(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label className="label-bold">Time: </label>
+        <select className="input-box" value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
+          <option value="">Select</option>
+          <option value="15min">15 min</option>
+          <option value="24hrs">24 hrs</option>
+        </select>
+      </div>
+
+      <div className="form-section">
+        <h3 className="section-title">Filter</h3>
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowTimestamp(!showTimestamp)} /> Timestamp
+          </label>
+        </div>
+
+        {showTimestamp && (
+          <div className="sub-section">
+            <div className="form-group">
+              <label>Calendar: </label>
+              <input type="date" className="input-box" value={calendarDate} onChange={(e) => setCalendarDate(e.target.value)} />
+            </div>
+
+            {timeRange === '24hrs' && (
+              <div className="form-group row-group">
+                <p>Hours:</p>
+                <label>From:</label>
+                <select className="input-small" value={hourFrom} onChange={(e) => setHourFrom(e.target.value)}>
+                  {dynamicHoursStart.map((hr) => (
+                    <option key={`from-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To:</label>
+                <select className="input-small" value={hourTo} onChange={(e) => setHourTo(e.target.value)}>
+                  {dynamicHoursEnd.map((hr) => (
+                    <option key={`to-hr-${hr}`} value={hr}>{hr}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {timeRange === '15min' && (
+              <div className="form-group row-group">
+                <p>Minutes:</p>
+                <label>From:</label>
+                <select className="input-small" value={minuteFrom} onChange={(e) => setMinuteFrom(e.target.value)}>
+                  {dynamicMinutesStart.map((min) => (
+                    <option key={`from-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+                <label className="ml-2">To:</label>
+                <select className="input-small" value={minuteTo} onChange={(e) => setMinuteTo(e.target.value)}>
+                  {dynamicMinutesEnd.map((min) => (
+                    <option key={`to-min-${min}`} value={min}>{min}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowPortNumber(!showPortNumber)} /> Port Number
+          </label>
+        </div>
+
+        {showPortNumber && (
+          <div className="sub-section">
+            <label>Enter the Port Number: </label>
+            <input type="text" className="input-small" value={portNumber} onChange={(e) => setPortNumber(e.target.value)} />
+          </div>
+        )}
+
+        <div className="checkbox-group">
+          <label>
+            <input type="checkbox" onChange={() => setShowMonType(!showMonType)} /> Mon-Type
+          </label>
+        </div>
+
+        {showMonType && (
+          <div className="sub-section">
+            <label>Enter the Mon-Type: </label>
+            <input type="text" className="input-small" value={monType} onChange={(e) => setMonType(e.target.value)} />
+          </div>
+        )}
+      </div>
+
+      <div className="form-group" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+        <button type="submit" className="submit-button">Submit</button>
+      </div>
+    </form>
+  );
+}
+
+export default App;
+
+
+
+
+
