@@ -1,0 +1,73 @@
+To support the three different APIs as specified, we'll modify your FormDataController to include:
+
+A separate endpoint for each API (/endpoint1, /endpoint2, /endpoint3)
+
+Each one expecting a different subset of the FormDataDTO fields
+
+Optional: you can define specific DTOs for each case, but we’ll keep using FormDataDTO for simplicity unless you ask otherwise.
+
+
+
+---
+
+Modified FormDataController.java:
+
+package com.UI.Controller;
+
+import com.UI.DTO.FormDataDTO;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
+public class FormDataController {
+
+    private final Map<String, FormDataDTO> formDataMap = new HashMap<>();
+
+    // API 1 - Only NEID
+    @PostMapping("/endpoint1")
+    public String submitNeidOnly(@RequestBody FormDataDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 1 - Stored NEID: " + formData.getNeid());
+        return "Stored NEID: " + formData.getNeid();
+    }
+
+    // API 2 - NEID, timeRange, calendarDate, minuteFrom, minuteTo, portNumber
+    @PostMapping("/endpoint2")
+    public String submitWithTimestampPort(@RequestBody FormDataDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 2 - Stored with timestamp and port:");
+        System.out.println(formData);
+        return "Stored data for NEID: " + formData.getNeid();
+    }
+
+    // API 3 - Same as API 2 + monType
+    @PostMapping("/endpoint3")
+    public String submitWithTimestampPortMonType(@RequestBody FormDataDTO formData) {
+        formDataMap.put(formData.getNeid(), formData);
+        System.out.println("API 3 - Stored with timestamp, port, and monType:");
+        System.out.println(formData);
+        return "Stored full data for NEID: " + formData.getNeid();
+    }
+
+    @GetMapping("/form-data")
+    public Collection<FormDataDTO> getAllFormData() {
+        System.out.println("Returning all stored data:");
+        return formDataMap.values();
+    }
+}
+
+
+---
+
+Let me know if you’d like to:
+
+Add validation logic to differentiate between which fields are required per endpoint.
+
+Return full objects or lists in JSON format for better client-side handling.
+
+Split the DTOs into multiple types per endpoint for better structure.
+
+
