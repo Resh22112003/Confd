@@ -1,0 +1,137 @@
+Got it! Since you're using Vite for your React app, the setup is slightly different but overall quite similar. Here’s the complete guide for integrating React Router with Vite:
+
+
+---
+
+1. Install React Router DOM
+
+In your Vite project root:
+
+npm install react-router-dom
+
+
+---
+
+2. Update Your main.jsx to Wrap in <BrowserRouter>
+
+Vite uses main.jsx (instead of index.js) as the entry point.
+
+// src/main.jsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.jsx';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
+
+---
+
+3. Modify App.jsx to Define Routes
+
+Update App.jsx to serve as your routing hub:
+
+// src/App.jsx
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import FormPage from './FormPage.jsx';
+import DataTable from './DataTable.jsx';
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<FormPage />} />
+      <Route path="/table" element={<DataTable />} />
+    </Routes>
+  );
+}
+
+export default App;
+
+
+---
+
+4. Move Form Code to FormPage.jsx
+
+Rename or create FormPage.jsx and move all your form logic there. Just import useNavigate and call navigate('/table') on successful submission.
+
+// src/FormPage.jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { submitForm } from './api.jsx';
+import './App.css';
+
+function FormPage() {
+  const navigate = useNavigate();
+  const [neid, setNeid] = useState('');
+  const [timeRange, setTimeRange] = useState('');
+  const [calendarDate, setCalendarDate] = useState('');
+  const [hourFrom, setHourFrom] = useState('');
+  const [hourTo, setHourTo] = useState('');
+  const [minuteFrom, setMinuteFrom] = useState('');
+  const [minuteTo, setMinuteTo] = useState('');
+  const [portNumber, setPortNumber] = useState('');
+  const [monType, setMonType] = useState('');
+  const [showTimestamp, setShowTimestamp] = useState(false);
+  const [showPortNumber, setShowPortNumber] = useState(false);
+  const [showMonType, setShowMonType] = useState(false);
+
+  const dynamicHoursStart = Array.from({ length: 23 }, (_, i) => i + 1);
+  const dynamicHoursEnd = Array.from({ length: 23 }, (_, i) => i + 2);
+  const dynamicMinutesStart = Array.from({ length: 14 }, (_, i) => i + 1);
+  const dynamicMinutesEnd = Array.from({ length: 14 }, (_, i) => i + 2);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      neid,
+      timeRange,
+      calendarDate,
+      hourFrom,
+      hourTo,
+      minuteFrom,
+      minuteTo,
+      portNumber,
+      monType
+    };
+
+    try {
+      await submitForm(payload);
+      navigate('/table');
+    } catch {
+      alert("Form submission failed.");
+    }
+  };
+
+  return (
+    <form className="form-container" onSubmit={handleSubmit}>
+      {/* Your full form JSX here as you already have it */}
+    </form>
+  );
+}
+
+export default FormPage;
+
+
+---
+
+✅ Summary
+
+Your Vite project will now:
+
+Start with the form at /
+
+Navigate to /table (DataTable view) after submission
+
+Use clean, Vite-compatible React Router setup
+
+
+Let me know if you also want to persist submitted data and pass it to DataTable, or show filtered results!
+
