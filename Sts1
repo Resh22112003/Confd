@@ -1,0 +1,323 @@
+Thanks! Based on your JSON structure, here’s how to update both the React frontend and the Spring Boot backend to fetch data from /api/endpoints, display it in a table, and provide a download option.
+
+
+---
+
+1. Spring Boot Backend – Controller (FormDataController.java)
+
+This example returns a list of sample JSON records:
+
+package com.UI.Controller;
+
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api")
+public class FormDataController {
+
+    @GetMapping("/endpoints")
+    public List<Map<String, String>> getFormDataAsJson() {
+        List<Map<String, String>> data = new ArrayList<>();
+
+        Map<String, String> entry1 = new HashMap<>();
+        entry1.put("neid", "NE123");
+        entry1.put("timestamp", "2025-04-08T14:30:00");
+        entry1.put("portname", "Port-1");
+        entry1.put("description", "Main uplink port");
+        entry1.put("direction", "in");
+        entry1.put("kpis", "CPU:75%,Mem:60%");
+        entry1.put("location", "Bangalore");
+        entry1.put("unit", "Router");
+
+        Map<String, String> entry2 = new HashMap<>();
+        entry2.put("neid", "NE456");
+        entry2.put("timestamp", "2025-04-08T15:00:00");
+        entry2.put("portname", "Port-2");
+        entry2.put("description", "Backup link");
+        entry2.put("direction", "out");
+        entry2.put("kpis", "CPU:50%,Mem:40%");
+        entry2.put("location", "Hyderabad");
+        entry2.put("unit", "Switch");
+
+        data.add(entry1);
+        data.add(entry2);
+
+        return data;
+    }
+}
+
+
+---
+
+2. React Frontend – JsonTableViewer.js
+
+import React, { useEffect, useState } from 'react';
+
+function JsonTableViewer() {
+  const [jsonData, setJsonData] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/endpoints")
+      .then((res) => res.json())
+      .then((data) => setJsonData(data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+  const downloadTable = () => {
+    const csvRows = [];
+
+    // Add headers
+    const headers = Object.keys(jsonData[0]);
+    csvRows.push(headers.join(','));
+
+    // Add rows
+    jsonData.forEach(row => {
+      const values = headers.map(h => `"${row[h]}"`);
+      csvRows.push(values.join(','));
+    });
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Form Data Table</h2>
+      {jsonData.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <table border="1" cellPadding="5" style={{ borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                {Object.keys(jsonData[0]).map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {jsonData.map((row, index) => (
+                <tr key={index}>
+                  {Object.values(row).map((value, i) => (
+                    <td key={i}>{value}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button onClick={downloadTable} style={{ marginTop: '10px' }}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default JsonTableViewer;
+
+
+---
+
+3. How to Add in Your Project
+
+Place JsonTableViewer.js in your src/components folder.
+
+Use it in your main app like this:
+
+
+import React from 'react';
+import JsonTableViewer from './components/JsonTableViewer';
+
+function App() {
+  return (
+    <div className="App">
+      <JsonTableViewer />
+    </div>
+  );
+}
+
+export default App;
+
+
+---
+
+Let me know if you want to make this table searchable or filterable too!
+
+
+Great! Here's how you can modularize your JsonTableViewer into separate component, CSS, and API logic files for better structure and reusability.
+
+
+---
+
+1. JsonTableViewer.js – Component
+
+import React, { useEffect, useState } from 'react';
+import { fetchFormData } from '../api/formDataApi';
+import '../styles/JsonTableViewer.css';
+
+function JsonTableViewer() {
+  const [jsonData, setJsonData] = useState([]);
+
+  useEffect(() => {
+    fetchFormData()
+      .then((data) => setJsonData(data))
+      .catch((err) => console.error("Fetch error:", err));
+  }, []);
+
+  const downloadTable = () => {
+    if (jsonData.length === 0) return;
+
+    const headers = Object.keys(jsonData[0]);
+    const csvRows = [
+      headers.join(','), // Header row
+      ...jsonData.map(row => headers.map(h => `"${row[h]}"`).join(','))
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="json-table-container">
+      <h2>Form Data Table</h2>
+      {jsonData.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <table className="json-table">
+            <thead>
+              <tr>
+                {Object.keys(jsonData[0]).map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {jsonData.map((row, index) => (
+                <tr key={index}>
+                  {Object.values(row).map((value, i) => (
+                    <td key={i}>{value}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="download-btn" onClick={downloadTable}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default JsonTableViewer;
+
+
+---
+
+2. formDataApi.js – API Logic
+
+Path: src/api/formDataApi.js
+
+export const fetchFormData = async () => {
+  const response = await fetch("http://localhost:8080/api/endpoints");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch form data");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+
+---
+
+3. JsonTableViewer.css – Styling
+
+Path: src/styles/JsonTableViewer.css
+
+.json-table-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.json-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.json-table th,
+.json-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.json-table th {
+  background-color: #f2f2f2;
+}
+
+.download-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+
+---
+
+How to Use
+
+Place JsonTableViewer.js in src/components/
+
+Place formDataApi.js in src/api/
+
+Place JsonTableViewer.css in src/styles/
+
+In App.js:
+
+
+import React from 'react';
+import JsonTableViewer from './components/JsonTableViewer';
+
+function App() {
+  return (
+    <div className="App">
+      <JsonTableViewer />
+    </div>
+  );
+}
+
+export default App;
+
+
+---
+
+Let me know if you’d like to make this paginated or searchable too!
+
