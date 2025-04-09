@@ -1,0 +1,124 @@
+To collect a full timestamp from the user in a calendar-style format like "2025-04-03-16-55-40" (i.e. YYYY-MM-DD-HH-MM-SS), we’ll enhance your current UI:
+
+Changes Needed:
+
+1. Add hour, minute, and second dropdowns next to the date input.
+
+
+2. Combine all into calendarDate, hour, minute, and second state values.
+
+
+3. Update the handleSubmit logic to build the full timestamp string.
+
+
+
+
+---
+
+Updated Code (Modifications Only):
+
+1. Add State:
+
+const [hour, setHour] = useState('');
+const [minute, setMinute] = useState('');
+const [second, setSecond] = useState('');
+
+2. Modify the Timestamp Section UI:
+
+Replace the current 15min dropdown with this:
+
+{showTimestamp && (
+  <div className="sub-section">
+    <div className="form-group">
+      <label>Calendar Date: </label>
+      <input
+        type="date"
+        required
+        className="input-box"
+        value={calendarDate}
+        onChange={(e) => setCalendarDate(e.target.value)}
+      />
+    </div>
+
+    <div className="form-group row-group">
+      <p>Time:</p>
+      <label>Hour:</label>
+      <select
+        className="input-small"
+        required
+        value={hour}
+        onChange={(e) => setHour(e.target.value)}
+      >
+        <option value="">--</option>
+        {[...Array(24).keys()].map((h) => (
+          <option key={`hour-${h}`} value={String(h).padStart(2, '0')}>
+            {String(h).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+
+      <label className="ml-2">Minute:</label>
+      <select
+        className="input-small"
+        required
+        value={minute}
+        onChange={(e) => setMinute(e.target.value)}
+      >
+        <option value="">--</option>
+        {[...Array(60).keys()].map((m) => (
+          <option key={`minute-${m}`} value={String(m).padStart(2, '0')}>
+            {String(m).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+
+      <label className="ml-2">Second:</label>
+      <select
+        className="input-small"
+        required
+        value={second}
+        onChange={(e) => setSecond(e.target.value)}
+      >
+        <option value="">--</option>
+        {[...Array(60).keys()].map((s) => (
+          <option key={`second-${s}`} value={String(s).padStart(2, '0')}>
+            {String(s).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+)}
+
+3. Update the Submit Logic:
+
+Update handleSubmit like this to build the timestamp:
+
+if (showTimestamp && showPortNumber && !showMonType) {
+  const fullTimestamp = `${calendarDate}-${hour}-${minute}-${second}`;
+  message = await submitAPI2({
+    neid,
+    timeRange,
+    timestamp: fullTimestamp,
+    portNumber,
+  });
+} else if (showTimestamp && showPortNumber && showMonType) {
+  const fullTimestamp = `${calendarDate}-${hour}-${minute}-${second}`;
+  message = await submitAPI3({
+    neid,
+    timeRange,
+    timestamp: fullTimestamp,
+    portNumber,
+    monType,
+  });
+}
+
+> Also change the backend accordingly to expect timestamp instead of calendarDate, minuteFrom, minuteTo.
+
+
+
+
+---
+
+Would you like me to help modify the backend submitAPI2 / submitAPI3 functions as well, or update the CSS to style the new fields neatly?
+
