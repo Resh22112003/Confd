@@ -1,0 +1,198 @@
+Great — you’re already splitting your endpoints logically by payload types! Now let’s define the matching DTO classes for:
+
+1. FormNeidDTO – only neid and timeRange
+
+
+2. FormTimestampPortDTO – adds timestamp and port fields
+
+
+3. FormFullDTO – includes all fields: timestamp, port, and monType
+
+
+
+These DTOs will support the user-readable fromTimestamp and toTimestamp format like "2025-04-03-16-55-40".
+
+
+---
+
+✅ FormNeidDTO.java
+
+package com.UI.DTO;
+
+public class FormNeidDTO {
+    private String neid;
+    private String timeRange;
+
+    public String getNeid() {
+        return neid;
+    }
+
+    public void setNeid(String neid) {
+        this.neid = neid;
+    }
+
+    public String getTimeRange() {
+        return timeRange;
+    }
+
+    public void setTimeRange(String timeRange) {
+        this.timeRange = timeRange;
+    }
+}
+
+
+---
+
+✅ FormTimestampPortDTO.java
+
+package com.UI.DTO;
+
+public class FormTimestampPortDTO {
+    private String neid;
+    private String timeRange;
+    private String fromTimestamp;
+    private String toTimestamp;
+    private String portNumber;
+
+    public String getNeid() {
+        return neid;
+    }
+
+    public void setNeid(String neid) {
+        this.neid = neid;
+    }
+
+    public String getTimeRange() {
+        return timeRange;
+    }
+
+    public void setTimeRange(String timeRange) {
+        this.timeRange = timeRange;
+    }
+
+    public String getFromTimestamp() {
+        return fromTimestamp;
+    }
+
+    public void setFromTimestamp(String fromTimestamp) {
+        this.fromTimestamp = fromTimestamp;
+    }
+
+    public String getToTimestamp() {
+        return toTimestamp;
+    }
+
+    public void setToTimestamp(String toTimestamp) {
+        this.toTimestamp = toTimestamp;
+    }
+
+    public String getPortNumber() {
+        return portNumber;
+    }
+
+    public void setPortNumber(String portNumber) {
+        this.portNumber = portNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "FormTimestampPortDTO{" +
+                "neid='" + neid + '\'' +
+                ", timeRange='" + timeRange + '\'' +
+                ", fromTimestamp='" + fromTimestamp + '\'' +
+                ", toTimestamp='" + toTimestamp + '\'' +
+                ", portNumber='" + portNumber + '\'' +
+                '}';
+    }
+}
+
+
+---
+
+✅ FormFullDTO.java
+
+package com.UI.DTO;
+
+public class FormFullDTO {
+    private String neid;
+    private String timeRange;
+    private String fromTimestamp;
+    private String toTimestamp;
+    private String portNumber;
+    private String monType;
+
+    public String getNeid() {
+        return neid;
+    }
+
+    public void setNeid(String neid) {
+        this.neid = neid;
+    }
+
+    public String getTimeRange() {
+        return timeRange;
+    }
+
+    public void setTimeRange(String timeRange) {
+        this.timeRange = timeRange;
+    }
+
+    public String getFromTimestamp() {
+        return fromTimestamp;
+    }
+
+    public void setFromTimestamp(String fromTimestamp) {
+        this.fromTimestamp = fromTimestamp;
+    }
+
+    public String getToTimestamp() {
+        return toTimestamp;
+    }
+
+    public void setToTimestamp(String toTimestamp) {
+        this.toTimestamp = toTimestamp;
+    }
+
+    public String getPortNumber() {
+        return portNumber;
+    }
+
+    public void setPortNumber(String portNumber) {
+        this.portNumber = portNumber;
+    }
+
+    public String getMonType() {
+        return monType;
+    }
+
+    public void setMonType(String monType) {
+        this.monType = monType;
+    }
+
+    @Override
+    public String toString() {
+        return "FormFullDTO{" +
+                "neid='" + neid + '\'' +
+                ", timeRange='" + timeRange + '\'' +
+                ", fromTimestamp='" + fromTimestamp + '\'' +
+                ", toTimestamp='" + toTimestamp + '\'' +
+                ", portNumber='" + portNumber + '\'' +
+                ", monType='" + monType + '\'' +
+                '}';
+    }
+}
+
+
+---
+
+Let me know if you want to:
+
+Add database persistence
+
+Validate timestamps or format them into LocalDateTime
+
+Filter results on GET based on neid or timestamp range
+
+
+I can add those enhancements next!
+
