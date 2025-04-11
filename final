@@ -1,0 +1,181 @@
+import React, { useContext } from 'react';
+import { DataContext } from './DataContext';
+import './DataTable.css';
+
+const TABLE_COLUMNS = ['neid', 'timestamp', 'portname', 'description', 'direction', 'kpis', 'location', 'unit'];
+
+function DataTable() {
+  const { submittedData } = useContext(DataContext);
+
+  const downloadTable = () => {
+    if (submittedData.length === 0) return;
+
+    const csvRows = [
+      TABLE_COLUMNS.join(','),
+      ...submittedData.map(row =>
+        TABLE_COLUMNS.map(col => `"${row[col] || ''}"`).join(',')
+      )
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="json-table-container">
+      <h2>Performance Data Table</h2>
+      {submittedData.length === 0 ? (
+        <p>No data to display.</p>
+      ) : (
+        <>
+          <table className="json-table">
+            <thead>
+              <tr>
+                {TABLE_COLUMNS.map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {submittedData.map((row, index) => (
+                <tr key={index}>
+                  {TABLE_COLUMNS.map((col) => (
+                    <td key={col}>{row[col] || ''}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="download-btn" onClick={downloadTable}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default DataTable;
+
+
+
+
+package com.FCAPS.service;
+
+import com.FCAPS.dto.PortRequestDTO;
+import com.FCAPS.dto.MOnTypeRequestDTO;
+import com.FCAPS.model.PMData;
+import com.FCAPS.repository.PMDataRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class NBIDataService {
+	
+	private final PMDataRepository pmDataRepository;
+	
+	public NBIDataService(PMDataRepository pmDataRepository) {
+		this.pmDataRepository=pmDataRepository;
+	}
+	
+//	1.Get all pm Data for a given neid
+	public List<Map<String,Object>> getAllPMData(int neid){
+		List<PMData> records = pmDataRepository.findByKeyNeid(neid);
+		return convertToResponse(records);
+	}
+//	2. Get Pm Data for given neid,timestamp range, portname
+	public List<Map<String, Object>> getPMDataByPort(PortRequestDTO request){
+		List<PMData> results = pmDataRepository.findByKeyNeidAndKeyTimestampGreaterThanAndKeyTimestampLessThan(
+				request.getNeid(),
+				request.getFromTimestamp(),
+				request.getToTimestamp()
+//				request.getPortname()
+				);
+		List<PMData> filtered = results.stream()
+				.filter(pm -> pm.getKey().getPortname().equalsIgnoreCase(request.getPortname()))
+				.collect(Collectors.toList());
+		
+		return convertToResponse(filtered);
+	}
+//	3.Get PM Data by montype filter
+	public List<Map<String, Object>> getPMDataByMonType(MOnTypeRequestDTO request){
+		List <PMData> results = pmDataRepository.findByKeyNeidAndKeyTimestampGreaterThanAndKeyTimestampLessThan(
+				request.getNeid(),
+				request.getFromTimestamp(),
+				request.getToTimestamp()
+				);
+		
+		//Filter on monType inside kpis map
+		return results.stream()
+//		List<PMData> filtered = dataList.stream()
+				.filter(pm -> pm.getKey().getPortname().equalsIgnoreCase(request.getPortname()))
+				.filter(pm -> pm.getKpis()!=null && pm.getKpis().containsKey(request.getMonType()))
+//				.toList();
+				.map(pm -> {
+					Map<String,Object> resmap = new HashMap<>();
+					resmap.put("neid", pm.getKey().getNeid());
+					resmap.put("timestamp", pm.getKey().getTimestamp());
+					resmap.put("portname", pm.getKey().getPortname());
+					resmap.put("description", pm.getDescription());
+					resmap.put("location", pm.getLocation());
+					resmap.put("direction", pm.getDirection());
+					resmap.put("unit", pm.getUnit());
+					resmap.put(request.getMonType(), pm.getKpis().get(request.getMonType()));
+					
+					return resmap;
+				})
+				.collect(Collectors.toList());
+//		return filtered.stream().map(this::convertToMap).toList();
+	}
+//	Utility to convert PMdata list into list of key-value response
+	private List<Map<String, Object>> convertToResponse(List<PMData> dataList){
+		List<Map<String,Object>> responseList = new ArrayList<>();
+		
+		for(PMData data: dataList) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("neid", data.getKey().getNeid());
+			map.put("timestamp", data.getKey().getTimestamp());
+			map.put("portname", data.getKey().getPortname());
+			map.put("description", data.getDescription());
+			map.put("location", data.getLocation());
+			map.put("direction", data.getDirection());
+			map.put("unit", data.getUnit());
+			
+			if(data.getKpis()!=null && !data.getKpis().isEmpty()) {
+				List<Map<String,Object>> kpiList = new ArrayList<>();
+				for(Map.Entry<String, String> entry : data.getKpis().entrySet()) {
+					Map<String, Object >kpiMap = new HashMap<>();
+					kpiMap.put("MonName", entry.getKey());
+					kpiMap.put("MonValue", entry.getValue());
+					kpiList.add(kpiMap);
+				}
+				map.put("Kpis", kpiList);
+			}
+			responseList.add(map);
+		}
+		return responseList;
+	}
+	private Map<String, Object> convertToMap(PMData pm){
+		Map<String,Object> map = new HashMap<>();
+			map.put("neid", pm.getKey().getNeid());
+			map.put("timestamp", pm.getKey().getTimestamp());
+			map.put("portname", pm.getKey().getPortname());
+			map.put("description", pm.getDescription());
+			map.put("location", pm.getLocation());
+			map.put("direction", pm.getDirection());
+			map.put("unit", pm.getUnit());
+			
+		if(pm.getKpis()!=null) {
+			map.put("kpis", pm.getKpis());
+		}
+			return map;
+	}
+}
