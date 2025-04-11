@@ -1,0 +1,102 @@
+To properly display the kpis field in your React code according to the format provided in your Spring Boot backend, you need to update the way you access and render kpis. Based on your backend, the kpis field can be either:
+
+An object (like { "mon1": "value1", "mon2": "value2" }), or
+
+A list of maps (like [ { MonName: "mon1", MonValue: "value1" }, ... ]).
+
+
+Your React table should handle both cases gracefully.
+
+Here’s the modified React component:
+
+import React, { useContext } from 'react';
+import { DataContext } from './DataContext';
+import './DataTable.css';
+
+const TABLE_COLUMNS = ['neid', 'timestamp', 'portname', 'description', 'direction', 'kpis', 'location', 'unit'];
+
+function DataTable() {
+  const { submittedData } = useContext(DataContext);
+
+  const formatKpis = (kpis) => {
+    if (!kpis) return '';
+    
+    if (Array.isArray(kpis)) {
+      return kpis.map(kpi => `${kpi.MonName}: ${kpi.MonValue}`).join(', ');
+    } else if (typeof kpis === 'object') {
+      return Object.entries(kpis).map(([key, val]) => `${key}: ${val}`).join(', ');
+    }
+    
+    return String(kpis);
+  };
+
+  const downloadTable = () => {
+    if (submittedData.length === 0) return;
+
+    const csvRows = [
+      TABLE_COLUMNS.join(','),
+      ...submittedData.map(row =>
+        TABLE_COLUMNS.map(col => {
+          if (col === 'kpis') return `"${formatKpis(row[col])}"`;
+          return `"${row[col] || ''}"`;
+        }).join(',')
+      )
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'form-data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="json-table-container">
+      <h2>Performance Data Table</h2>
+      {submittedData.length === 0 ? (
+        <p>No data to display.</p>
+      ) : (
+        <>
+          <table className="json-table">
+            <thead>
+              <tr>
+                {TABLE_COLUMNS.map((key) => (
+                  <th key={key}>{key.toUpperCase()}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {submittedData.map((row, index) => (
+                <tr key={index}>
+                  {TABLE_COLUMNS.map((col) => (
+                    <td key={col}>
+                      {col === 'kpis' ? formatKpis(row[col]) : row[col] || ''}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="download-btn" onClick={downloadTable}>
+            Download CSV
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default DataTable;
+
+Summary of Fixes:
+
+Introduced formatKpis function to render both object-based and list-based KPI formats.
+
+Handled the KPI field in both the table UI and CSV download logic.
+
+
+Let me know if the backend consistently uses either list or object, and I can simplify the code for you!
+
